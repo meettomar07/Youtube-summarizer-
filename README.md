@@ -11,36 +11,44 @@ A powerful tool that automatically downloads, transcribes, and summarizes YouTub
 - 🌐 **Web Interface**: User-friendly Streamlit web interface
 - ⚡ **Configurable**: Customizable chunk sizes and processing parameters
 
-## Setup
+## 🚀 Quick Start
 
-### 1. Install Dependencies
+### Prerequisites
 
-```bash
-pip install -r requirements.txt
-```
+- Python 3.8+
+- Hugging Face API key
+- Internet connection
 
-### 2. Set Up Hugging Face API Key
+### Installation
 
-Create a `.env` file in the project root:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/meettomar07/Youtube-summarizer-.git
+   cd Youtube-summarizer-
+   ```
 
-```bash
-HUGGINGFACE_API_KEY=your_hugging_face_api_key_here
-HUGGINGFACE_MODEL=facebook/bart-large-cnn
-TRANSCRIPTION_BACKEND=huggingface
-TRANSCRIPTION_MODEL=openai/whisper-large
-MAX_CHUNK_TOKENS=800
-CHUNK_MAX_SECONDS=480
-CHUNK_GAP_SECONDS=2.0
-OUTPUT_DIR=outputs
-```
+2. **Run the setup script (Recommended)**
+   ```bash
+   python setup.py
+   ```
+   This will automatically:
+   - Install dependencies
+   - Set up environment variables
+   - Test the installation
 
-Or set the environment variable directly:
+3. **Manual setup (Alternative)**
+   ```bash
+   # Install dependencies
+   pip install -r requirements.txt
+   
+   # Copy example environment file
+   cp .env.example .env
+   
+   # Edit .env file and add your Hugging Face API key
+   # HUGGINGFACE_API_KEY=your_actual_api_key_here
+   ```
 
-```bash
-export HUGGINGFACE_API_KEY=your_hugging_face_api_key_here
-```
-
-### 3. Get Your Hugging Face API Key
+### Get Your Hugging Face API Key
 
 1. Go to [Hugging Face](https://huggingface.co/)
 2. Create an account or log in

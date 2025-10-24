@@ -51,7 +51,8 @@ def app():
                 "Missing Hugging Face API key. Please set HUGGINGFACE_API_KEY as an environment variable.\n\n"
                 "You can set it by:\n"
                 "1. Creating a .env file with: HUGGINGFACE_API_KEY=your_key_here\n"
-                "2. Or setting it in your system environment variables"
+                "2. Or setting it in your system environment variables\n\n"
+                "Run 'python setup.py' for automatic setup."
             )
             return
         settings.huggingface_api_key = api_key
