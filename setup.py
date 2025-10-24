@@ -12,21 +12,21 @@ from pathlib import Path
 def check_python_version():
     """Check if Python version is compatible."""
     if sys.version_info < (3, 8):
-        print("❌ Python 3.8 or higher is required.")
+        print("ERROR: Python 3.8 or higher is required.")
         print(f"Current version: {sys.version}")
         return False
-    print(f"✅ Python version: {sys.version.split()[0]}")
+    print(f"OK: Python version: {sys.version.split()[0]}")
     return True
 
 def install_dependencies():
     """Install required dependencies."""
-    print("📦 Installing dependencies...")
+    print("Installing dependencies...")
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-        print("✅ Dependencies installed successfully")
+        print("OK: Dependencies installed successfully")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Failed to install dependencies: {e}")
+        print(f"ERROR: Failed to install dependencies: {e}")
         return False
 
 def setup_env_file():
@@ -35,19 +35,19 @@ def setup_env_file():
     env_example = Path(".env.example")
     
     if env_file.exists():
-        print("✅ .env file already exists")
+        print("OK: .env file already exists")
         return True
     
     if not env_example.exists():
-        print("❌ .env.example file not found")
+        print("ERROR: .env.example file not found")
         return False
     
-    print("📝 Setting up .env file...")
+    print("Setting up .env file...")
     print("Please enter your Hugging Face API key:")
     api_key = input("HUGGINGFACE_API_KEY: ").strip()
     
     if not api_key:
-        print("❌ API key is required")
+        print("ERROR: API key is required")
         return False
     
     # Read example file and replace placeholder
@@ -59,27 +59,27 @@ def setup_env_file():
     with open(env_file, 'w') as f:
         f.write(content)
     
-    print("✅ .env file created successfully")
+    print("OK: .env file created successfully")
     return True
 
 def test_imports():
     """Test if all modules can be imported."""
-    print("🔍 Testing imports...")
+    print("Testing imports...")
     try:
         import config
         import downloader
         import transcriber
         import chunker
         import summarizer
-        print("✅ All modules imported successfully")
+        print("OK: All modules imported successfully")
         return True
     except ImportError as e:
-        print(f"❌ Import error: {e}")
+        print(f"ERROR: Import error: {e}")
         return False
 
 def main():
     """Main setup function."""
-    print("🚀 YouTube Summarizer Setup")
+    print("YouTube Summarizer Setup")
     print("=" * 40)
     
     # Check Python version
@@ -98,7 +98,7 @@ def main():
     if not test_imports():
         sys.exit(1)
     
-    print("\n🎉 Setup completed successfully!")
+    print("\nSetup completed successfully!")
     print("\nNext steps:")
     print("1. Run the web interface: streamlit run ui.py")
     print("2. Or use CLI: python main.py 'https://youtube.com/watch?v=VIDEO_ID'")
