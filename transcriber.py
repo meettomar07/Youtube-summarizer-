@@ -28,8 +28,8 @@ def _segments_from_json3(events: List[Dict]) -> List[TranscriptSegment]:
 def transcribe(
     audio_path: str,
     transcript_events: Optional[List[Dict]],
-    backend: Literal["auto", "openai", "whisper_local"] = "auto",
-    model: str = "whisper-1",
+    backend: Literal["auto", "openai", "whisper_local", "huggingface"] = "huggingface",
+    model: str = "openai/whisper-large",
     language: Optional[str] = None,
 ) -> List[TranscriptSegment]:
     # Prefer provided json3 events when available
@@ -38,7 +38,7 @@ def transcribe(
 
     selected = backend
     if backend == "auto":
-        selected = "openai" if os.getenv("OPENAI_API_KEY") else "whisper_local"
+        selected = "huggingface" if os.getenv("HUGGINGFACE_API_KEY") else "whisper_local"
 
     if selected == "openai":
         try:
@@ -60,6 +60,20 @@ def transcribe(
             segments.append(
                 TranscriptSegment(start=float(seg.get("start", 0)), end=float(seg.get("end", 0)), text=seg.get("text", "").strip())
             )
+        return segments
+
+    # ---------------- Hugging Face transcription ----------------
+    if selected == "huggingface":
+        try:
+            from transformers import pipeline
+        except Exception as exc:
+            raise RuntimeError("transformers package not installed. pip install transformers") from exc
+
+        hf_transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-large")
+        result = hf_transcriber(audio_path)
+        segments: List[TranscriptSegment] = [
+            TranscriptSegment(start=0.0, end=0.0, text=result["text"].strip())
+        ]
         return segments
 
     # whisper local

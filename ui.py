@@ -12,11 +12,11 @@ if _ROOT not in sys.path:
 
 # Support running via package or direct script
 try:
-    from .config import load_settings
-    from .downloader import fetch_with_ytdlp
-    from .transcriber import transcribe
-    from .chunker import chunk_segments
-    from .summarizer import summarize_chunks, synthesize_overview, to_json, to_markdown
+    from config import load_settings
+    from downloader import fetch_with_ytdlp
+    from transcriber import transcribe
+    from chunker import chunk_segments
+    from summarizer import summarize_chunks, synthesize_overview, to_json, to_markdown
 except Exception:
     # Absolute imports after adding root to sys.path
     from youtube_summarizer.config import load_settings
@@ -44,16 +44,17 @@ def app():
     go = st.button("Summarize")
 
     if go and url:
-        # Load key only from environment or Streamlit secrets
-        api_key = os.getenv("OPENAI_API_KEY") or (
-            (st.secrets.get("OPENAI_API_KEY") if hasattr(st, "secrets") else None)
-        )
+        # Load API key from environment variables
+        api_key = os.getenv("HUGGINGFACE_API_KEY")
         if not api_key:
             st.error(
-                "Missing OpenAI API key. Set OPENAI_API_KEY as an environment variable or add it to .streamlit/secrets.toml"
+                "Missing Hugging Face API key. Please set HUGGINGFACE_API_KEY as an environment variable.\n\n"
+                "You can set it by:\n"
+                "1. Creating a .env file with: HUGGINGFACE_API_KEY=your_key_here\n"
+                "2. Or setting it in your system environment variables"
             )
             return
-        settings.openai_api_key = api_key
+        settings.huggingface_api_key = api_key
 
         with st.status("Fetching metadata and audio via yt-dlp...", expanded=False):
             meta = fetch_with_ytdlp(url, preferred_lang=lang or "en")
@@ -78,16 +79,16 @@ def app():
             )
         st.success(f"Chunks: {len(chunks)}")
 
-        with st.status("Summarizing with GPT...", expanded=False):
+        with st.status("Summarizing with Hugging Face...", expanded=False):
             chapters = summarize_chunks(
                 chunks=chunks,
                 video_title=meta.title,
-                model=settings.openai_model,
-                openai_api_key=settings.openai_api_key,
+                model=settings.huggingface_model,
+                huggingface_api_key=settings.huggingface_api_key,
             )
         st.success("Chapters generated")
 
-        overview = synthesize_overview(chapters, settings.openai_model, settings.openai_api_key)
+        overview = synthesize_overview(chapters, settings.huggingface_model, settings.huggingface_api_key)
         result_json = to_json(meta.title, chapters)
         result_md = to_markdown(meta.title, overview, chapters)
 

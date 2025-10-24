@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
-from .chunker import Chunk
+from chunker import Chunk
 
 
 @dataclass
@@ -32,16 +32,58 @@ def summarize_chunks(
     chunks: List[Chunk],
     video_title: str,
     model: str,
-    openai_api_key: Optional[str],
+    huggingface_api_key: Optional[str],
+    use_huggingface: bool = True,  # default to HF instead of OpenAI
 ) -> List[Chapter]:
+    chapters: List[Chapter] = []
+
+    if use_huggingface:
+        try:
+            from transformers import pipeline
+        except Exception as exc:
+            raise RuntimeError("transformers package not installed. pip install transformers") from exc
+
+        summarizer = pipeline("summarization", model=model)
+        for idx, ch in enumerate(chunks, start=1):
+            # Truncate text if it's too long for the model
+            text = ch.text
+            if len(text) > 1500:  # Increased limit for more context
+                text = text[:1500] + "..."
+            
+            try:
+                # Adjust max_length based on input length for better summaries
+                input_length = len(text.split())
+                if input_length < 20:
+                    max_len = min(50, input_length * 2)
+                    min_len = min(10, input_length)
+                else:
+                    max_len = min(150, input_length // 2)
+                    min_len = min(30, input_length // 4)
+                
+                summary = summarizer(text, max_length=max_len, min_length=min_len, do_sample=False)[0]["summary_text"]
+            except Exception as e:
+                # Fallback to simple truncation if summarization fails
+                summary = text[:200] + "..." if len(text) > 200 else text
+                
+            chapters.append(
+                Chapter(
+                    title=f"Chapter {idx}",
+                    start=ch.start,
+                    end=ch.end,
+                    summary=summary,
+                    key_points=[],  # HF minimal version
+                )
+            )
+        return chapters
+
+    # ---------------- OpenAI GPT summarization ----------------
     try:
-        from openai import OpenAI  # type: ignore
+        from openai import OpenAI
     except Exception as exc:
         raise RuntimeError("openai package not installed. pip install openai") from exc
 
-    client = OpenAI(api_key=openai_api_key) if openai_api_key else OpenAI()
+    client = OpenAI(api_key=huggingface_api_key) if huggingface_api_key else OpenAI()
 
-    chapters: List[Chapter] = []
     for idx, ch in enumerate(chunks, start=1):
         user_prompt = (
             f"Analyze this section from the video '{video_title}'.\n"
@@ -82,12 +124,12 @@ def summarize_chunks(
     return chapters
 
 
-def synthesize_overview(chapters: List[Chapter], model: str, openai_api_key: Optional[str]) -> str:
+def synthesize_overview(chapters: List[Chapter], model: str, huggingface_api_key: Optional[str]) -> str:
     try:
         from openai import OpenAI  # type: ignore
     except Exception as exc:
         raise RuntimeError("openai package not installed. pip install openai") from exc
-    client = OpenAI(api_key=openai_api_key) if openai_api_key else OpenAI()
+    client = OpenAI(api_key=huggingface_api_key) if huggingface_api_key else OpenAI()
 
     summaries = " ".join(c.summary for c in chapters if c.summary)
     if not summaries:

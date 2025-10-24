@@ -3,11 +3,11 @@ import json
 import os
 from typing import Optional
 
-from .config import load_settings
-from .downloader import fetch_with_ytdlp
-from .transcriber import transcribe
-from .chunker import chunk_segments
-from .summarizer import summarize_chunks, synthesize_overview, to_json, to_markdown
+from config import load_settings
+from downloader import fetch_with_ytdlp
+from transcriber import transcribe
+from chunker import chunk_segments
+from summarizer import summarize_chunks, synthesize_overview, to_json, to_markdown
 
 
 def run(url: str, out_json: Optional[str], out_md: Optional[str], language: Optional[str]) -> None:
@@ -34,11 +34,11 @@ def run(url: str, out_json: Optional[str], out_md: Optional[str], language: Opti
     chapters = summarize_chunks(
         chunks=chunks,
         video_title=meta.title,
-        model=settings.openai_model,
-        openai_api_key=settings.openai_api_key,
+        model=settings.huggingface_model,
+        huggingface_api_key=settings.huggingface_api_key,
     )
 
-    overview = synthesize_overview(chapters, settings.openai_model, settings.openai_api_key)
+    overview = synthesize_overview(chapters, settings.huggingface_model, settings.huggingface_api_key)
     result_json = to_json(meta.title, chapters)
     result_md = to_markdown(meta.title, overview, chapters)
 

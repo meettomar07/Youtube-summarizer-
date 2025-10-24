@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from .transcriber import TranscriptSegment
+from transcriber import TranscriptSegment
 
 
 @dataclass
